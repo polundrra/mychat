@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    ports:
+      - '9000:9000'
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  db:
+    build:
+      context: .
+      dockerfile: build/postgres.Dockerfile
+    ports:
+      - '5432:5432'
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  data:
+
+networks:
+  backend:
+    driver: bridge
