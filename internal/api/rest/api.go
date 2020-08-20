@@ -6,13 +6,17 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
-	"mychat/internal/api/rest/model"
+	"mychat/internal/api/rest/dto"
 	"mychat/internal/service"
 	"net/http"
 )
 
 type ChatApi struct {
 	service service.Service
+}
+
+func New(service service.Service) ChatApi {
+	return ChatApi{service}
 }
 
 func (c *ChatApi) Router() http.Handler {
@@ -33,7 +37,7 @@ func (c *ChatApi) addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := model.User{}
+	user := dto.User{}
 	if err := json.Unmarshal(body, &user); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -50,7 +54,7 @@ func (c *ChatApi) addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(&model.Id{Id: id})
+	resp, err := json.Marshal(&dto.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -69,7 +73,7 @@ func (c *ChatApi) createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := model.ChatReq{}
+	chat := dto.ChatReq{}
 	if err := json.Unmarshal(body, &chat); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -90,7 +94,7 @@ func (c *ChatApi) createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(&model.Id{Id: id})
+	resp, err := json.Marshal(&dto.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -109,7 +113,7 @@ func (c *ChatApi) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := model.MessageReq{}
+	message := dto.MessageReq{}
 	if err := json.Unmarshal(body, &message); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -134,7 +138,7 @@ func (c *ChatApi) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(&model.Id{Id: id})
+	resp, err := json.Marshal(&dto.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -153,7 +157,7 @@ func (c *ChatApi) getChatsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := model.UsersChatsReq{}
+	user := dto.UsersChatsReq{}
 	if err := json.Unmarshal(body, &user); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -170,7 +174,7 @@ func (c *ChatApi) getChatsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(model.Chats(chats))
+	resp, err := json.Marshal(dto.Chats(chats))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -189,7 +193,7 @@ func (c *ChatApi) getMessagesByChatID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := model.ChatMessagesReq{}
+	chat := dto.ChatMessagesReq{}
 	if err := json.Unmarshal(body, &chat); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -206,7 +210,7 @@ func (c *ChatApi) getMessagesByChatID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(model.Messages(messages))
+	resp, err := json.Marshal(dto.Messages(messages))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return

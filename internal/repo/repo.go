@@ -2,7 +2,7 @@ package repo
 
 import (
 	"github.com/jackc/pgx"
-	"mychat/internal/repo/model"
+	"mychat/internal/repo/dao"
 )
 
 //ChatRepo is an abstraction over persistence storage
@@ -10,13 +10,13 @@ type ChatRepo interface {
 	CreateChat(name string, users []uint32) (uint64, error)
 	AddUser(username string) (uint64, error)
 	AddMessage(chat uint64, author uint64, text string) (uint64, error)
-	GetChatsByUserID(userID uint32) ([]model.Chat, error)
-	GetMessagesByChatID(chatID uint64) ([]model.Message, error)
+	GetChatsByUserID(userID uint32) ([]dao.Chat, error)
+	GetMessagesByChatID(chatID uint64) ([]dao.Message, error)
 
-	GetUserByUsername(username string) (*model.User, error)
-	GetChatByName(name string) (*model.Chat, error)
-	GetUserByUserID(id uint64) (*model.User, error)
-	GetChatByChatID(id uint64) (*model.Chat, error)
+	GetUserByUsername(username string) (*dao.User, error)
+	GetChatByName(name string) (*dao.Chat, error)
+	GetUserByUserID(id uint64) (*dao.User, error)
+	GetChatByChatID(id uint64) (*dao.Chat, error)
 }
 
 type Opts struct {

@@ -1,0 +1,10 @@
+# This is a TOML document.
+
+ServerPort = ":9000"
+
+[RepoOpts]
+Host = "db"
+Port = 5432
+Database = "mychat"
+User = "polina"
+Password = "super_secret"

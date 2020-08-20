@@ -1,9 +1,9 @@
-package model
+package dto
 
-import "mychat/internal/repo/model"
+import "mychat/internal/repo/dao"
 
 //easyjson:json
-type Chats []model.Chat
+type Chats []dao.Chat
 
 type ChatReq struct {
 	Name string `json:"name"`

@@ -1,4 +1,4 @@
-package model
+package dto
 
 //easyjson:json
 type Id struct {

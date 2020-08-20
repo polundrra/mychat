@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx"
 	"log"
-	"mychat/internal/repo/model"
+	"mychat/internal/repo/dao"
 	"strings"
 	"time"
 )
@@ -13,8 +13,8 @@ type postgreRepo struct {
 	pool *pgx.ConnPool
 }
 
-func (p *postgreRepo) GetUserByUserID(id uint64) (*model.User, error) {
-	user := model.User{}
+func (p *postgreRepo) GetUserByUserID(id uint64) (*dao.User, error) {
+	user := dao.User{}
 	if err := p.pool.QueryRow("select * from users where id = $1", id).Scan(&user.ID, &user.Username, &user.CreatedAt); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil
@@ -24,8 +24,8 @@ func (p *postgreRepo) GetUserByUserID(id uint64) (*model.User, error) {
 	return &user, nil
 }
 
-func (p *postgreRepo) GetChatByChatID(id uint64) (*model.Chat, error) {
-	chat := model.Chat{}
+func (p *postgreRepo) GetChatByChatID(id uint64) (*dao.Chat, error) {
+	chat := dao.Chat{}
 	sql := "SELECT c.id, c.name, array(select user_id from users_chat where users_chat.chat_id = c.id), c.created_at " +
 		"FROM chat c INNER JOIN users_chat u ON c.id = u.chat_id WHERE c.id = $1 LIMIT 1"
 	if err := p.pool.QueryRow(sql, id).Scan(&chat.ID, &chat.Name, &chat.Users, &chat.CreatedAt); err != nil {
@@ -82,8 +82,8 @@ func insertManyChatUsersQuery(users []uint32) (string, []interface{}) {
 	return buf.String(), args
 }
 
-func (p *postgreRepo) GetChatByName(name string) (*model.Chat, error) {
-	chat := model.Chat{}
+func (p *postgreRepo) GetChatByName(name string) (*dao.Chat, error) {
+	chat := dao.Chat{}
 	sql := "SELECT c.id, c.name, array(select user_id from users_chat where users_chat.chat_id = c.id), c.created_at " +
 		"FROM chat c INNER JOIN users_chat u ON c.id = u.chat_id WHERE c.name = $1 LIMIT 1"
 	err := p.pool.QueryRow(sql, name).Scan(&chat.ID, &chat.Name, &chat.Users, &chat.CreatedAt)
@@ -105,8 +105,8 @@ func (p *postgreRepo) AddUser(username string) (uint64, error) {
 	return id, nil
 }
 
-func (p *postgreRepo) GetUserByUsername(username string) (*model.User, error) {
-	user := model.User{}
+func (p *postgreRepo) GetUserByUsername(username string) (*dao.User, error) {
+	user := dao.User{}
 	err := p.pool.QueryRow("select * from users where username = $1", username).Scan(&user.ID, &user.Username, &user.CreatedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -132,11 +132,11 @@ func (p *postgreRepo) AddMessage(chat uint64, author uint64, text string) (uint6
 	return id, nil
 }
 
-func (p *postgreRepo) GetChatsByUserID(userID uint32) ([]model.Chat, error) {
+func (p *postgreRepo) GetChatsByUserID(userID uint32) ([]dao.Chat, error) {
 	sql := "SELECT c.id, c.name, array(select user_id from users_chat where users_chat.chat_id = c.id), c.created_at " +
 		"FROM chat c INNER JOIN users_chat u ON c.id = u.chat_id WHERE u.user_id = $1 ORDER BY c.recent_msg_at DESC"
-	chatsID := []model.Chat{}
-	chat := model.Chat{}
+	chatsID := []dao.Chat{}
+	chat := dao.Chat{}
 	rows, err := p.pool.Query(sql, userID)
 	if err != nil {
 		return nil, err
@@ -151,10 +151,10 @@ func (p *postgreRepo) GetChatsByUserID(userID uint32) ([]model.Chat, error) {
 	return chatsID, err
 }
 
-func (p *postgreRepo) GetMessagesByChatID(chatID uint64) ([]model.Message, error) {
+func (p *postgreRepo) GetMessagesByChatID(chatID uint64) ([]dao.Message, error) {
 	sql := "SELECT * FROM message WHERE chat_id = $1 ORDER BY created_at ASC"
-	messages := make([]model.Message, 0)
-	message := model.Message{}
+	messages := make([]dao.Message, 0)
+	message := dao.Message{}
 	rows, err := p.pool.Query(sql, chatID)
 	if err != nil {
 		return nil, err

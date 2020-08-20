@@ -2,7 +2,7 @@ package service
 
 import (
 	"mychat/internal/repo"
-	"mychat/internal/repo/model"
+	"mychat/internal/repo/dao"
 )
 
 type chatService struct {
@@ -58,7 +58,7 @@ func (c chatService) AddMessage(chat uint64, author uint64, text string) (uint64
 	return 0, ErrChatNotFound
 }
 
-func (c chatService) GetChatsByUserID(userID uint32) ([]model.Chat, error) {
+func (c chatService) GetChatsByUserID(userID uint32) ([]dao.Chat, error) {
 	user, err := c.repo.GetUserByUserID(uint64(userID))
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (c chatService) GetChatsByUserID(userID uint32) ([]model.Chat, error) {
 	return c.repo.GetChatsByUserID(userID)
 }
 
-func (c chatService) GetMessagesByChatID(chatID uint64) ([]model.Message, error) {
+func (c chatService) GetMessagesByChatID(chatID uint64) ([]dao.Message, error) {
 	chat, err := c.repo.GetChatByChatID(chatID)
 	if err != nil {
 		return nil, err

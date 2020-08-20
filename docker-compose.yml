@@ -10,6 +10,8 @@ services:
     restart: always
     depends_on:
       - db
+    volumes:
+      - ./configs/conf.toml:/etc/mychat/conf.toml
     networks:
       - backend
 

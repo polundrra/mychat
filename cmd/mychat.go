@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/BurntSushi/toml"
 	"log"
 	"mychat/internal/api/rest"
 	"mychat/internal/repo"
@@ -8,22 +9,26 @@ import (
 	"net/http"
 )
 
+type conf struct {
+	ServerPort string
+	RepoOpts repo.Opts
+}
+
 func main() {
-	repo, err := repo.New(repo.Opts{
-		Host: "db",
-		Port: 5432,
-		Database: "mychat",
-		User: "polina",
-		Password: "super_secret",
-	})
+	var conf conf
+	if _, err := toml.DecodeFile("/etc/mychat/conf.toml", &conf); err != nil {
+		log.Fatal(err)
+	}
+	repo, err := repo.New(conf.RepoOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	service := service.New(repo)
+
 	api := rest.New(service)
 
-	if err := http.ListenAndServe(":9000", api.Router()); err != nil {
+	if err := http.ListenAndServe(conf.ServerPort, api.Router()); err != nil {
 		log.Fatal(err)
 	}
 }

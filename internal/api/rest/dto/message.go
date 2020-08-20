@@ -1,6 +1,6 @@
-package model
+package dto
 
-import "mychat/internal/repo/model"
+import "mychat/internal/repo/dao"
 
 //easyjson:json
 type MessageReq struct {
@@ -9,4 +9,4 @@ type MessageReq struct {
 	Text string `json:"text"`
 }
 
-type Messages []model.Message
+type Messages []dao.Message
