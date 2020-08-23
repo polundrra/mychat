@@ -2,14 +2,14 @@ package service
 
 import (
 	"mychat/internal/repo"
-	"mychat/internal/repo/dao"
+	"mychat/internal/repo/model"
 )
 
 type chatService struct {
 	repo repo.ChatRepo
 }
 
-func (c chatService) CreateUser(username string) (uint64, error) {
+func (c *chatService) CreateUser(username string) (uint64, error) {
 	user, err := c.repo.GetUserByUsername(username)
 	if err != nil {
 		return 0, err
@@ -20,7 +20,7 @@ func (c chatService) CreateUser(username string) (uint64, error) {
 	return c.repo.AddUser(username)
 }
 
-func (c chatService) CreateChat(name string, users []uint32) (uint64, error) {
+func (c *chatService) CreateChat(name string, users []uint32) (uint64, error) {
 	chat, err := c.repo.GetChatByName(name)
 	if err != nil {
 		return 0, err
@@ -45,7 +45,7 @@ func equal(a, b []uint32) bool {
 	return true
 }
 
-func (c chatService) AddMessage(chat uint64, author uint64, text string) (uint64, error) {
+func (c *chatService) AddMessage(chat uint64, author uint64, text string) (uint64, error) {
 	chats, err := c.repo.GetChatsByUserID(uint32(author))
 	if err != nil {
 		return 0, err
@@ -58,7 +58,7 @@ func (c chatService) AddMessage(chat uint64, author uint64, text string) (uint64
 	return 0, ErrChatNotFound
 }
 
-func (c chatService) GetChatsByUserID(userID uint32) ([]dao.Chat, error) {
+func (c *chatService) GetChatsByUserID(userID uint32) ([]model.Chat, error) {
 	user, err := c.repo.GetUserByUserID(uint64(userID))
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (c chatService) GetChatsByUserID(userID uint32) ([]dao.Chat, error) {
 	return c.repo.GetChatsByUserID(userID)
 }
 
-func (c chatService) GetMessagesByChatID(chatID uint64) ([]dao.Message, error) {
+func (c *chatService) GetMessagesByChatID(chatID uint64) ([]model.Message, error) {
 	chat, err := c.repo.GetChatByChatID(chatID)
 	if err != nil {
 		return nil, err

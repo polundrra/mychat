@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
-	"mychat/internal/api/rest/dto"
+	"mychat/internal/api/rest/model"
 	"mychat/internal/service"
 	"net/http"
 )
@@ -33,11 +33,11 @@ func (c *ChatApi) Router() http.Handler {
 func (c *ChatApi) addUser(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	user := dto.User{}
+	user := model.User{}
 	if err := json.Unmarshal(body, &user); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -50,11 +50,15 @@ func (c *ChatApi) addUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := c.service.CreateUser(user.Username)
 	if err != nil {
+		if err == service.ErrUserExists {
+			writeError(w, http.StatusConflict, err.Error())
+			return
+		}
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	resp, err := json.Marshal(&dto.Id{Id: id})
+	resp, err := json.Marshal(&model.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -73,7 +77,7 @@ func (c *ChatApi) createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := dto.ChatReq{}
+	chat := model.ChatReq{}
 	if err := json.Unmarshal(body, &chat); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -86,6 +90,7 @@ func (c *ChatApi) createChat(w http.ResponseWriter, r *http.Request) {
 
 	if len(chat.Users) == 0 {
 		writeError(w, http.StatusBadRequest, "Empty users")
+		return
 	}
 
 	id, err := c.service.CreateChat(chat.Name, chat.Users)
@@ -94,7 +99,7 @@ func (c *ChatApi) createChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(&dto.Id{Id: id})
+	resp, err := json.Marshal(&model.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -113,7 +118,7 @@ func (c *ChatApi) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := dto.MessageReq{}
+	message := model.MessageReq{}
 	if err := json.Unmarshal(body, &message); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -126,10 +131,12 @@ func (c *ChatApi) sendMessage(w http.ResponseWriter, r *http.Request) {
 
 	if message.Author <= 0 {
 		writeError(w, http.StatusBadRequest, "Wrong user id")
+		return
 	}
 
 	if message.Text == "" {
 		writeError(w, http.StatusBadRequest, "Empty message")
+		return
 	}
 
 	id, err := c.service.AddMessage(message.Chat, message.Author, message.Text)
@@ -138,7 +145,7 @@ func (c *ChatApi) sendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(&dto.Id{Id: id})
+	resp, err := json.Marshal(&model.Id{Id: id})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -157,7 +164,7 @@ func (c *ChatApi) getChatsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := dto.UsersChatsReq{}
+	user := model.UsersChatsReq{}
 	if err := json.Unmarshal(body, &user); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -174,7 +181,7 @@ func (c *ChatApi) getChatsByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(dto.Chats(chats))
+	resp, err := json.Marshal(model.Chats(chats))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -193,7 +200,7 @@ func (c *ChatApi) getMessagesByChatID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := dto.ChatMessagesReq{}
+	chat := model.ChatMessagesReq{}
 	if err := json.Unmarshal(body, &chat); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -210,7 +217,7 @@ func (c *ChatApi) getMessagesByChatID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(dto.Messages(messages))
+	resp, err := json.Marshal(model.Messages(messages))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
